@@ -32,10 +32,15 @@
         .rcimg-12:hover {
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
         }
-
+        .imgarticle {
+             width: 700px; 
+        }
+        .imgechelle {
+             width: 300px; 
+        }
         .jspsych-content-wrapper {
             width: 900px;
-            height: 700px;
+            height: 10000px;
         }
     </style>
 </head>
@@ -103,6 +108,16 @@
 
     var RCstim = genFacesPerSlide(12, imgsRC); // RC fast-12: 250 trials (6 ori + 6 anti = 12  faces per trial)
 
+    // randomly assigning either to the cambrioleur ou banquier condition
+    var cond = jsPsych.data.getURLVariable("cond");
+    if(cond == null) {cond = jsPsych.randomization.sampleWithoutReplacement(["cambrioleur", "banquier"], 1)[0];}
+
+    //loading article images
+    var article_cambrioleur = ["articles/article_cambrioleur.png"];
+    var article_banquier = ["articles/article_banquier.png"];
+    var echelle = ["articles/echelle.png"];
+    preloadimagesRC.push(article_cambrioleur, article_banquier, echelle);
+
     // EXPERIMENT -----------------------------------------------------------------------------------------------------------------
     /* Instructions and Fullscreen mode */
     var activateFullscreen = {
@@ -121,10 +136,10 @@
         stimulus: function () {
             var html = "";
             html += "<h1>Information et consentement</h1>";
-            html += "<p class = 'justify'>Ce questionnaire participe à la réalisation de mon mémoire en faculté de psychologie et sciences de l’éducation à l’UCLouvain. Il vise à mieux comprendre la perception de différents groupes sociaux et dure <b>environ 10 minutes. </b><br><br>";
+            html += "<p class = 'justify'>Ce questionnaire participe à la réalisation de mon mémoire en faculté de psychologie et sciences de l’éducation à l’UCLouvain. Il vise à mieux comprendre la perception de différents groupes sociaux et dure <b>environ 15-20 minutes. </b><br><br>";
             html += "Votre participation à cette étude sera <b>strictement anonyme</b> et les informations recueillies resteront <b>confidentielles et utilisées uniquement à des fins de recherche scientifique. </b>";
             html += "Si vous désirez une information supplémentaire sur cette étude, vous pouvez contacter lola.romainville@student.uclouvain.be<br><br>";
-            html += "En participant à cette étude, je reconnais avoir lu et compris les renseignements fournis ci-dessus, avoir plus de 18 ans et accepter de participer à cette étude scientifique de manière totalement anonyme. </p>";
+            html += "En participant à cette étude, je reconnais avoir lu et compris les renseignements fournis ci-dessus, avoir plus de 18 ans et accepter de participer à cette étude scientifique de manière totalement anonyme. J'autorise également les chercheurs·euses à utiliser mes données anonymisées à des fins scientifiques. </p>";
             return html;
         },
     };
@@ -137,9 +152,55 @@
         stimulus: function () {
             var html = "";
             html += "<h1>Instructions générales</h1>";
-            html += "<p class = 'justify'>Dans cette étude, nous cherchons à mieux comprendre la <b>perception des personnes incarcérées</b>. Le terme de ‘personnes incarcérées’ comprend ici les prisonniers, les détenus, les personnes en détention préventive, les personnes condamnées à une peine de prison, les résidents d’un centre fermé, les personnes privées de leur liberté. Nous utiliserons seulement le terme ‘personnes incarcérées’ ici par facilité, mais gardez en tête tout ce qu’il comprend. <br><br>";
-            html += "Cette étude se divise en deux parties. Dans une première partie vous ferez une tâche de reconnaissance. Dans une deuxième partie vous devrez répondre à quelques questions. </p>";
+            html += "<p class = 'justify'>Dans cette étude, nous cherchons à mieux comprendre la <b>perception de différents individus à travers des articles de presse</b>. Cette étude se divise en deux parties. <br><br>";
+            html += "Dans une première partie, vous devrez lire un article de journal portant sur un fait divers. Dans une deuxième partie, vous devrez effectuer une 'tâche de reconnaissance' et répondre à quelques questions. </p>";
             return html;
+        },
+    };
+
+    var RCinst_article_cambrioleur = {
+        type: "html-button-response",
+        post_trial_gap: 300,
+        choices: ['continuer'],
+        stimulus: function () {
+            var html = "";
+            html += "<h1>Article de journal</h1>";
+            html += "<p class = 'justify'>Voici un article de journal relatant un fait divers. Veuillez <b>lire attentivement l'article avant de passer à la suite :</b>.<br></p>";
+            html += "<img class='imgarticle' src='" + article_cambrioleur+ "'>";
+            return html;
+        },
+        on_start: function () {
+          jsPsych.data.addProperties({
+            article_time_start: Date.now(), // milliseconds elapsed since January 1, 1970
+          });
+        },
+        on_finish: function () {
+          jsPsych.data.addProperties({
+            article_time_finish: Date.now(), // milliseconds elapsed since January 1, 1970
+          });
+        },
+    };
+
+    var RCinst_article_banquier = {
+        type: "html-button-response",
+        post_trial_gap: 300,
+        choices: ['continuer'],
+        stimulus: function () {
+            var html = "";
+            html += "<h1>Article de journal</h1>";
+            html += "<p class = 'justify'>Voici un article de journal relatant un fait divers. Veuillez <b>lire attentivement l'article avant de passer à la suite :</b>.<br></p>";
+            html += "<img class='imgarticle' src='" + article_banquier+ "'>";
+            return html;
+        },
+        on_start: function () {
+          jsPsych.data.addProperties({
+            article_time_start: Date.now(), // milliseconds elapsed since January 1, 1970
+          });
+        },
+        on_finish: function () {
+          jsPsych.data.addProperties({
+            article_time_finish: Date.now(), // milliseconds elapsed since January 1, 1970
+          });
         },
     };
 
@@ -152,7 +213,7 @@
             html += "<h1>Tâche de recconnaissance</h1>";
             html += "<p class = 'justify'> Dans cette tâche nous vous présenterons une série de visages comme ci-dessous. ";
             html += "A chaque essai, nous vous présenterons 12 visages et <b>vous devrez sélectionner le visage qui, selon vous ";
-            html += "ressemle le plus au visage d'une <u>personne incarcérée</u></b>. Utilisez votre souris d'ordinateur pour sélectionner un visage. <br><br>";
+            html += "ressemle le plus <u>au visage de l’auteur du fait divers (Thomas)</u></b>. Utilisez votre souris d'ordinateur pour sélectionner un visage. <br><br>";
             html += "Notez que ces visages ont été pixélisés (floutés). En conséquences, ces 12 visages ont l'air de se ressembler et pourtant ces visages sont bien différents les uns des autres.</p>";
             html += "<img width='200' style='padding: 0px' src='" + imgLink(474, 'ori') + "'>";
             return html;
@@ -207,7 +268,7 @@
             stimulus: function () {
                 html = "";
                 html += "<p>Sélectionnez le visage qui, selon vous, ";
-                html += "ressemble le plus à une personne incarcérée</br></br>";
+                html += "ressemble le plus à l’auteur du fait divers (Thomas)</br></br>";
                 jsPsych.timelineVariable('trialImgs', true).map(function (e) {
                     html += "<img class='rcimg-12' src='" + e + "'>";
                 });
@@ -218,6 +279,100 @@
         }]
     };
 
+
+// Questions
+
+// traits
+    var likertPreamble = '<p class = "justify">Veuillez indiquer à quel point chaque trait correspond à Thomas de 1 (pas du tout d’accord) à 7 (tout à fait d’accord). <br><i>En considérant que 1 = pas du tout d’accord et 7 = tout à fait d’accord (les valeurs intermédiaires servent à nuancer votre opinion).</i></p>';
+
+    var scale = ["1</br>pas du tout d'accord", "2", "3", "4", "5", "6", "7</br>tout à fait d'accord"];
+
+
+    var traits = [
+        'Compétent',
+        'Doué',
+        'Sûr de soi',
+        'Déterminé',
+        'Chaleureux',
+        'Sociable',
+        'Honnête',
+        'Sincère',
+    ];
+
+    var questionstrait = [];
+    traits.map(function (item) { questionstrait.push({ prompt: '<i>' + item + '</i>', labels: scale, required: true }); });
+
+    var likingGrp = {
+        type: 'survey-likert',
+        preamble: likertPreamble,
+        questions: questionstrait,
+        post_trial_gap: 300,
+        on_finish: function (data) {
+            $(".jspsych-content-wrapper").css("height", "1200px");
+            var parsed_response = JSON.parse(data.responses);
+            jsPsych.data.addProperties({
+                competent: parsed_response.Q0,
+                doue: parsed_response.Q1,
+                surdesoi: parsed_response.Q2,
+                determine: parsed_response.Q3,
+                chaleureux: parsed_response.Q4,
+                sociable: parsed_response.Q4,
+                honnete: parsed_response.Q4,
+                sincere: parsed_response.Q4,
+            });
+        },
+    };
+
+
+// Political orientation
+
+    var orientation = {
+        timeline: [{
+            type: 'survey-text',
+            questions: [{ prompt: "Concernant votre orientation politique, diriez-vous que vous êtes plus à gauche ou à droite ? <br><i>Le chiffre 1 correspond à une orientation politique tout à fait à gauche, le chiffre 7 correspond à une orientation politique tout à fait à droite.</i><br><br>Indiquez un chiffre (de 1 à 7) :", rows: 1, columns: 10 }],
+            button_label: "continuer",
+        }],
+        loop_function: function (data) {
+            var res = data.values()[0].responses;
+            var res = JSON.parse(res).Q0;
+            if (res == "") {
+                alert("Veuillez répondre à la question !");
+                return true;
+            }
+        },
+        on_finish: function (data) {
+            jsPsych.data.addProperties({
+                orientation: JSON.parse(data.responses).Q0,
+            });
+        },
+    };
+
+// Echelle sociale
+
+
+var echelle = {
+        timeline: [{
+            type: 'survey-text',
+            questions: [{ prompt: "<br><br>Comme vous le savez, nous vivons dans une société qui comprend un grand nombre de groupes sociaux. En effet, il existe de nombreux groupes dans la société qui sont perçus différemment et, en tant que membres de cette société, nous avons tous une opinion sur chacun d'entre eux. Considérez cette échelle comme représentant la position des gens dans notre société:<br> <img class='imgechelle' src='" + echelle+ "'><br> Au sommet de l'échelle se trouvent les gens qui sont les mieux lotis. Ils ont le plus d'argent, le plus haut niveau de scolarité, et les emplois qui apportent le plus de respect. Au bas de l'échelle se trouvent les gens qui sont les plus mal lotis. Ils ont le moins d'argent, peu ou pas d'éducation, pas d'emploi ou des emplois que personne ne veut ou ne respecte. <br>Indiquez s'il vous plaît l'échelon qui représente le mieux votre position sur l'échelle, de 1 (plus mal lotis) à 10 (mieux lotis) :", rows: 1, columns: 10 }],
+            button_label: "continuer",
+        }],
+        loop_function: function (data) {
+            var res = data.values()[0].responses;
+            var res = JSON.parse(res).Q0;
+            if (res == "") {
+                alert("Veuillez répondre à la question !");
+                return true;
+            }
+        },
+        on_finish: function (data) {
+            jsPsych.data.addProperties({
+                echelle: JSON.parse(data.responses).Q0,
+            });
+        },
+    };
+
+
+// demographics
     var genderOptions = ['Homme', 'Femme', 'Autre'];
     var gender = {
         type: 'survey-multi-choice',
@@ -307,17 +462,45 @@
 
 
     /*  ~~~~~~~~~~~~~~~~ TIMELINES  ~~~~~~~~~~~~~~~~ */
-    timeline.push(activateFullscreen);
-    timeline.push(Consent);
-    timeline.push(RCinst1);
-    timeline.push(RCinst2);
-    timeline.push(RCinst3);
-    timeline.push(RC1);
-    timeline.push(RCinst4);
-    timeline.push(gender);
-    timeline.push(age);
-    timeline.push(language);
-    timeline.push(goal);
+
+timeline.push(activateFullscreen);
+timeline.push(Consent);
+
+switch(cond) {
+  case "cambrioleur":
+    timeline.push(RCinst1,
+                    RCinst_article_cambrioleur,
+                    RCinst2,
+                    RCinst3,
+                    RC1,
+                    RCinst4,
+                    likingGrp,
+                    orientation,
+                    echelle,
+                    gender,
+                    age,
+                    language,
+                    goal
+                    );
+      break;
+  case "banquier":
+    timeline.push(RCinst1,
+                    RCinst_article_banquier,
+                    RCinst2,
+                    RCinst3,
+                    RC1,
+                    RCinst4,
+                    likingGrp,
+                    orientation,
+                    echelle,
+                    gender,
+                    age,
+                    language,
+                    goal
+                    );
+      break;
+  }
+
     timeline.push(exitFullscreen);
 
     /* start the experiment */
@@ -346,7 +529,8 @@
 
             /* jsPsych: add data to every trial */
             jsPsych.data.addProperties({
-                id: id
+                id: id,
+                cond:cond
             });
 
             var data = jsPsych.data.get().filterCustom(function (x) {
